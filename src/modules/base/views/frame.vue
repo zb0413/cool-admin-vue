@@ -7,16 +7,32 @@
 <script lang="ts" name="frame" setup>
 import { ref, watch, onMounted } from "vue";
 import { useCool } from "/@/cool";
+import { useBase } from "/$/base";
 
 const loading = ref(false);
 const url = ref();
+const { user } = useBase();
 
 const { route, refs, setRefs } = useCool();
+
+async function getSrc(srcUrl: string) {
+	if (srcUrl) {
+		const res = await fetch(srcUrl, {
+			method: 'GET',
+			headers: {
+				"Authorization": user.token,
+			}
+		});
+		debugger;
+		const blob = await res.blob();
+		url.value = URL.createObjectURL(blob);
+	}
+}
 
 watch(
 	() => route,
 	(val) => {
-		url.value = val.meta?.iframeUrl;
+		getSrc(val.meta?.iframeUrl);
 	},
 	{
 		immediate: true,
@@ -26,6 +42,8 @@ watch(
 
 onMounted(() => {
 	loading.value = true;
+
+
 
 	refs.iframe.onload = () => {
 		loading.value = false;
