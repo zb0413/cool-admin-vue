@@ -23,7 +23,6 @@ async function getSrc(srcUrl: string) {
 				"Authorization": user.token,
 			}
 		});
-		debugger;
 		const blob = await res.blob();
 		url.value = URL.createObjectURL(blob);
 	}
