@@ -52,6 +52,26 @@ yarn
 yarn dev
 ```
 
-### 低价服务器
+### TODO
 
-[阿里云、腾讯云、华为云低价云服务器，不限新老](https://cool-js.com/ad/server.html)
+ - poxy
+   - 日志（完成）
+   - response 状态记录
+   - 权限
+   - 白名单url
+ - postgres兼容
+ - 认证
+   - Oauth okta github
+   - AKSK
+   - 登录后路由控制
+   - login as功能
+   - 在线用户
+   - token增加 departmentIds（完成）
+ - 模块化注册
+   - 数据初始化
+   - 菜单
+   - 其他
+ - env区分环境
+ - 定时任务
+ - 部门编辑
+ - 

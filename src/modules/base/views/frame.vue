@@ -15,7 +15,7 @@ const { user } = useBase();
 
 const { route, refs, setRefs } = useCool();
 
-async function getSrc(srcUrl: string) {
+async function getSrc(srcUrl: any) {
 	if (srcUrl) {
 		const res = await fetch(srcUrl, {
 			method: 'GET',

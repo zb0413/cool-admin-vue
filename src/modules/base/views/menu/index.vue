@@ -31,14 +31,8 @@
 
 				<!-- 权限 -->
 				<template #column-perms="{ scope }">
-					<el-tag
-						v-for="(item, index) in scope.row.permList"
-						:key="index"
-						effect="plain"
-						size="small"
-						style="margin: 2px; letter-spacing: 0.5px"
-						>{{ item }}</el-tag
-					>
+					<el-tag v-for="(item, index) in scope.row.permList" :key="index" effect="plain" size="small"
+						style="margin: 2px; letter-spacing: 0.5px">{{ item }}</el-tag>
 				</template>
 
 				<!-- 路由 -->
@@ -60,16 +54,9 @@
 
 				<!-- 行新增 -->
 				<template #slot-add="{ scope }">
-					<el-button
-						type="success"
-						text
-						bg
-						v-permission="{
-							and: [service.base.sys.menu.permission.add, scope.row.type != 2]
-						}"
-						@click="append(scope.row)"
-						>新增</el-button
-					>
+					<el-button type="success" text bg v-permission="{
+						and: [service.base.sys.menu.permission.add, scope.row.type != 2]
+					}" @click="append(scope.row)">新增</el-button>
 				</template>
 			</cl-table>
 		</cl-row>
@@ -364,7 +351,7 @@ const Crud = useCrud(
 				});
 
 				render(deepTree(list));
-				menu.get();
+				//menu.get();
 			});
 		}
 	},
