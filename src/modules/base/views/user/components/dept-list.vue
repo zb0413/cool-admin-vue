@@ -29,35 +29,17 @@
 
 		<div class="dept-tree__container" @contextmenu.stop.prevent="onContextMenu">
 			<el-scrollbar>
-				<el-tree
-					v-loading="loading"
-					node-key="id"
-					default-expand-all
-					:data="list"
-					:props="{
-						label: 'name'
-					}"
-					:draggable="isDrag"
-					:allow-drag="allowDrag"
-					:allow-drop="allowDrop"
-					:expand-on-click-node="false"
-					@node-contextmenu="onContextMenu"
-				>
+				<el-tree v-loading="loading" node-key="id" default-expand-all :data="list" :props="{
+					label: 'name'
+				}" :draggable="isDrag" :allow-drag="allowDrag" :allow-drop="allowDrop" :expand-on-click-node="false"
+					@node-contextmenu="onContextMenu">
 					<template #default="{ node, data }">
 						<div class="dept-tree__node">
-							<span
-								class="dept-tree__node-label"
-								:class="{
-									'is-active': data.id == ViewGroup?.selected?.id
-								}"
-								@click="rowClick(data)"
-								>{{ node.label }}</span
-							>
-							<span
-								v-if="browser.isMini"
-								class="dept-tree__node-icon"
-								@click="onContextMenu($event, data, node)"
-							>
+							<span class="dept-tree__node-label" :class="{
+								'is-active': data.id == ViewGroup?.selected?.id
+							}" @click="rowClick(data)">{{ node.label }}</span>
+							<span v-if="browser.isMini" class="dept-tree__node-icon"
+								@click="onContextMenu($event, data, node)">
 								<el-icon>
 									<more-filled />
 								</el-icon>
@@ -196,7 +178,15 @@ function rowEdit(item: Eps.BaseSysDepartmentEntity) {
 							max: 100
 						}
 					}
-				}
+				},
+				{
+					prop: "viewPath",
+					label: "默认主页",
+					// hidden: ({ scope }) => scope.type != 1,
+					component: {
+						name: "cl-menu-file"
+					}
+				},
 			],
 			form: {
 				...item
@@ -207,7 +197,8 @@ function rowEdit(item: Eps.BaseSysDepartmentEntity) {
 						id: item.id,
 						parentId: item.parentId,
 						name: data.name,
-						orderNum: data.orderNum
+						orderNum: data.orderNum,
+						viewPath: data.viewPath
 					})
 						.then(() => {
 							ElMessage.success(`新增部门 “${data.name}” 成功`);

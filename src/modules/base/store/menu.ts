@@ -7,6 +7,7 @@ import { router, service } from "/@/cool";
 import { revisePath } from "../utils";
 import { Menu } from "../types";
 import { config } from "/@/config";
+import { useBase } from "/$/base";
 
 // 本地缓存
 const data = storage.info();
@@ -72,24 +73,34 @@ export const useMenuStore = defineStore("menu", function () {
 
 	// 设置视图
 	function setRoutes(list: Menu.List) {
-		// 默认第一个菜单为首页
-		const fp = getPath(group.value[0]);
-
-		// 查找符合路由
-		const route = list.find((e) => e.path == fp);
+		const { user } = useBase();
+		const route = list.find((e) => e.path == '/');
+		const viewPath = user.info?.rootView || 'modules/demo/views/home/index.vue';
 
 		if (route) {
-			// 判断是否已经注册
-			if (!router.getRoutes().find((e) => e.name == "home")) {
-				const newRoute = {
-					...route,
-					path: "/",
-					name: "home"
-				};
-				router.append([Object.assign({}, newRoute)]);
-			}
+			route.viewPath = viewPath
+		} else {
+			const newRoute = {
+				"id": 0,
+				"parentId": null,
+				"name": "首页",
+				"router": "/",
+				"perms": null,
+				"type": 1,
+				"icon": null,
+				"orderNum": 0,
+				"viewPath": viewPath,
+				"keepAlive": 1,
+				"isShow": 0,
+				"path": "/",
+				"meta": {
+					"label": "首页",
+					"keepAlive": 1
+				},
+				"children": []
+			};
+			router.append([Object.assign({}, newRoute)]);
 		}
-
 		routes.value = list;
 	}
 
