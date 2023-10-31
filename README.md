@@ -63,7 +63,7 @@ yarn dev
  - 认证
    - Oauth okta github
    - AKSK
-   - 登录后路由控制
+   - 登录后路由控制（完成）
    - login as功能
    - 在线用户
    - token增加 departmentIds（完成）
