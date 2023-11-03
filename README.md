@@ -55,23 +55,24 @@ yarn dev
 ### TODO
 
  - poxy
-   - 日志（完成）
+   - 访问日志（完成）
    - response 状态记录
-   - 权限
+   - 基于url+method权限拦截
    - 白名单url
  - postgres兼容
+ - 数据库命名格式统一 驼峰转下划线
  - 认证
    - Oauth okta github
    - AKSK
    - 登录后路由控制（完成）
-   - login as功能
-   - 在线用户
+   - login as功能(没有记录tonken，暂时做不到)
+   - 在线用户(基于文件的查询，暂时做不到)
    - token增加 departmentIds（完成）
  - 模块化注册
    - 数据初始化
    - 菜单
-   - 其他
+   - url白名单
+   - 转发proxy
  - env区分环境
  - 定时任务
- - 部门编辑
- - 
+ - 部门编辑（完成）
