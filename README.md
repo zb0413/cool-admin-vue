@@ -60,6 +60,7 @@ yarn dev
    - 基于url+method权限拦截
    - 白名单url
  - postgres兼容
+ - 乐观锁
  - 数据库命名格式统一 驼峰转下划线
  - 认证
    - Oauth okta github

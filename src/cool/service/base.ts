@@ -8,10 +8,10 @@ export function Service(
 	value:
 		| string
 		| {
-				proxy?: string;
-				namespace?: string;
-				url?: string;
-		  }
+			proxy?: string;
+			namespace?: string;
+			url?: string;
+		}
 ) {
 	return function (target: any) {
 		// 命名

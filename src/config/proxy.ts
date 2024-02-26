@@ -5,6 +5,11 @@ export const proxy = {
 		changeOrigin: true,
 		rewrite: (path: string) => path.replace(/^\/dev/, "")
 	},
+	"/dev/ws/": {
+		target: 'ws://starlette-training:8000',
+		ws: true,
+		rewrite: (path: string) => path.replace(/^\/dev/, "")
+	},
 
 	"/prod/": {
 		target: "https://show.cool-admin.com",
