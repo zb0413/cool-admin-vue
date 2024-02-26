@@ -31,13 +31,13 @@
 			<el-scrollbar>
 				<el-tree v-loading="loading" node-key="id" default-expand-all :data="list" :props="{
 					label: 'name'
-				}" :draggable="isDrag" :allow-drag="allowDrag" :allow-drop="allowDrop" :expand-on-click-node="false"
-					@node-contextmenu="onContextMenu">
+				}" highlight-current :draggable="isDrag" :allow-drag="allowDrag" :allow-drop="allowDrop"
+					:expand-on-click-node="false" @node-contextmenu="onContextMenu" @node-click="rowClick">
 					<template #default="{ node, data }">
 						<div class="dept-tree__node">
 							<span class="dept-tree__node-label" :class="{
 								'is-active': data.id == ViewGroup?.selected?.id
-							}" @click="rowClick(data)">{{ node.label }}</span>
+							}">{{ node.label }}</span>
 							<span v-if="browser.isMini" class="dept-tree__node-icon"
 								@click="onContextMenu($event, data, node)">
 								<el-icon>
@@ -60,9 +60,10 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useCool } from "/@/cool";
 import { deepTree, revDeepTree } from "/@/cool/utils";
 import { isArray } from "lodash-es";
-import { ContextMenu, setFocus, useForm } from "@cool-vue/crud";
+import { ContextMenu, useForm } from "@cool-vue/crud";
 import { Refresh as RefreshIcon, Operation, MoreFilled } from "@element-plus/icons-vue";
-import { checkPerm, useViewGroup } from "/$/base";
+import { checkPerm } from "/$/base";
+import { useViewGroup } from "/@/plugins/view";
 
 const props = defineProps({
 	drag: {
@@ -78,9 +79,8 @@ const props = defineProps({
 const emit = defineEmits(["refresh", "user-add"]);
 
 const { service, browser } = useCool();
-const { ViewGroup } = useViewGroup();
-
 const Form = useForm();
+const { ViewGroup } = useViewGroup();
 
 // 树形列表
 const list = ref<Eps.BaseSysDepartmentEntity[]>([]);
@@ -141,79 +141,67 @@ function rowClick(item?: Eps.BaseSysDepartmentEntity) {
 function rowEdit(item: Eps.BaseSysDepartmentEntity) {
 	const method = item.id ? "update" : "add";
 
-	Form.value?.open(
-		{
-			title: "编辑部门",
-			width: "550px",
-			props: {
-				labelWidth: "100px"
+	Form.value?.open({
+		title: "编辑部门",
+		width: "550px",
+		props: {
+			labelWidth: "100px"
+		},
+		items: [
+			{
+				label: "部门名称",
+				prop: "name",
+				component: {
+					name: "el-input"
+				},
+				required: true
 			},
-			items: [
-				{
-					label: "部门名称",
-					prop: "name",
-					component: {
-						name: "el-input"
-					},
-					required: true
-				},
-				{
-					label: "上级部门",
-					prop: "parentName",
-					component: {
-						name: "el-input",
-						props: {
-							disabled: true
-						}
+			{
+				label: "上级部门",
+				prop: "parentName",
+				component: {
+					name: "el-input",
+					props: {
+						disabled: true
 					}
-				},
-				{
-					label: "排序",
-					prop: "orderNum",
-					component: {
-						name: "el-input-number",
-						props: {
-							"controls-position": "right",
-							min: 0,
-							max: 100
-						}
-					}
-				},
-				{
-					prop: "viewPath",
-					label: "默认主页",
-					// hidden: ({ scope }) => scope.type != 1,
-					component: {
-						name: "cl-menu-file"
-					}
-				},
-			],
-			form: {
-				...item
+				}
 			},
-			on: {
-				submit(data, { done, close }) {
-					service.base.sys.department[method]({
-						id: item.id,
-						parentId: item.parentId,
-						name: data.name,
-						orderNum: data.orderNum,
-						viewPath: data.viewPath
-					})
-						.then(() => {
-							ElMessage.success(`新增部门 “${data.name}” 成功`);
-							close();
-							refresh();
-						})
-						.catch((err) => {
-							ElMessage.error(err.message);
-							done();
-						});
+			{
+				label: "排序",
+				prop: "orderNum",
+				component: {
+					name: "el-input-number",
+					props: {
+						"controls-position": "right",
+						min: 0,
+						max: 100
+					}
 				}
 			}
+		],
+		form: {
+			...item
 		},
-		[setFocus()]
-	);
+		on: {
+			submit(data, { done, close }) {
+				service.base.sys.department[method]({
+					id: item.id,
+					parentId: item.parentId,
+					name: data.name,
+					orderNum: data.orderNum
+				})
+					.then(() => {
+						ElMessage.success(`新增部门 “${data.name}” 成功`);
+						close();
+						refresh();
+					})
+					.catch((err) => {
+						ElMessage.error(err.message);
+						done();
+					});
+			}
+		}
+	});
 }
 
 // 删除部门
@@ -440,7 +428,6 @@ onMounted(function () {
 
 			&.is-active {
 				color: var(--color-primary);
-				font-weight: bold;
 			}
 		}
 

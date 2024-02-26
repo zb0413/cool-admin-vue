@@ -9,13 +9,7 @@
 		</cl-row>
 
 		<cl-row>
-			<cl-table
-				ref="Table"
-				:default-sort="{
-					prop: 'createTime',
-					order: 'descending'
-				}"
-			/>
+			<cl-table ref="Table" />
 		</cl-row>
 
 		<cl-row>
@@ -25,26 +19,32 @@
 
 		<cl-upsert ref="Upsert">
 			<template #slot-relevance="{ scope }">
-				<el-switch
-					v-model="scope.relevance"
-					:active-value="1"
-					:inactive-value="0"
-					@change="onRelevanceChange"
-				/>
-				<span
-					:style="{
-						marginLeft: '10px',
-						fontSize: '12px'
-					}"
-					>是否关联上下级</span
-				>
+				<div>
+					<el-row>
+						<cl-switch v-model="scope.relevance" />
+
+						<span
+							:style="{
+								marginLeft: '10px',
+								fontSize: '12px'
+							}"
+						>
+							是否关联上下级
+						</span>
+					</el-row>
+
+					<cl-dept-check
+						v-model="scope.departmentIdList"
+						:check-strictly="scope.relevance == 0"
+					/>
+				</div>
 			</template>
 		</cl-upsert>
 	</cl-crud>
 </template>
 
-<script lang="ts" name="sys-role" setup>
-import { useTable, useUpsert, useCrud, setFocus } from "@cool-vue/crud";
+<script lang="ts" setup name="sys-role">
+import { useTable, useUpsert, useCrud } from "@cool-vue/crud";
 import { useCool } from "/@/cool";
 
 const { service } = useCool();
@@ -102,29 +102,17 @@ const Upsert = useUpsert({
 		{
 			label: "数据权限",
 			prop: "relevance",
-			flex: false,
 			component: {
 				name: "slot-relevance"
-			}
-		},
-		{
-			label: "",
-			prop: "departmentIdList",
-			value: [],
-			component: {
-				name: "cl-dept-check",
-				props: {},
-				style: {
-					marginTop: "-10px"
-				}
 			}
 		}
 	],
 
-	plugins: [setFocus()],
-
-	onOpened(data) {
-		onRelevanceChange(data.relevance || 0);
+	onSubmit(data, { next }) {
+		next({
+			...data,
+			departmentIdList: data.departmentIdList || []
+		});
 	}
 });
 
@@ -154,7 +142,7 @@ const Table = useTable({
 		{
 			prop: "createTime",
 			label: "创建时间",
-			sortable: "custom",
+			sortable: "desc",
 			minWidth: 160
 		},
 		{
@@ -170,11 +158,4 @@ const Table = useTable({
 		}
 	]
 });
-
-// 是否关联上下级
-function onRelevanceChange(val: number | string | boolean) {
-	Upsert.value?.setProps("departmentIdList", {
-		checkStrictly: val == 0
-	});
-}
 </script>

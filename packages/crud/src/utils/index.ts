@@ -59,7 +59,7 @@ export function dataset(obj: any, key: string, value: any): any {
 
 		return obj;
 	} catch (e) {
-		console.error("Format error", `${key}`);
+		console.error("[dataset] format error", `${key}`);
 		return {};
 	}
 }
@@ -115,13 +115,23 @@ export function getValue(data: any, params?: any) {
 }
 
 // 深度查找
-export function deepFind(value: any, list: any[]) {
-	function deep(arr: any[]): any | undefined {
+export function deepFind(value: any, list: any[], options?: { allLevels: boolean }) {
+	const { allLevels = true } = options || {};
+
+	function deep(arr: any[], name: string[]): any | undefined {
 		for (const e of arr) {
 			if (e.value === value) {
-				return e;
+				if (allLevels) {
+					return {
+						...e,
+						label: [...name, e.label].join(" / ")
+					};
+				} else {
+					return e;
+				}
 			} else if (e.children) {
-				const d = deep(e.children);
+				const d = deep(e.children, [...name, e.label]);
+
 				if (d !== undefined) {
 					return d;
 				}
@@ -130,7 +140,7 @@ export function deepFind(value: any, list: any[]) {
 		return undefined;
 	}
 
-	return deep(list);
+	return deep(list, []);
 }
 
 // uuid

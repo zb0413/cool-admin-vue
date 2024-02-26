@@ -18,7 +18,7 @@ export function useAction({
 		}: { prop?: string; key?: "options" | "props" | "hidden" | "hidden-toggle"; path?: string },
 		data?: any
 	) {
-		let p: string = path || "";
+		const p: string = path || "";
 
 		if (path) {
 			dataset(config, p, data);
@@ -64,7 +64,7 @@ export function useAction({
 						break;
 				}
 			} else {
-				console.error(`Prop[${prop}] is not found`);
+				console.error(`[set] ${prop} is not found`);
 			}
 		}
 	}

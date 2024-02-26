@@ -13,7 +13,7 @@ const useDictStore = defineStore("dict", () => {
 
 	// 获取
 	function get(name: string) {
-		return computed(() => data[name]);
+		return computed(() => data[name] || []);
 	}
 
 	// 查找
@@ -34,9 +34,13 @@ const useDictStore = defineStore("dict", () => {
 				for (const [i, arr] of Object.entries(res)) {
 					arr.forEach((e) => {
 						e.label = e.name;
-						e.value = e.value || e.id;
+
+						if (e.value === undefined || e.value === "" || e.value === null) {
+							e.value = e.id;
+						}
 					});
 
+					// @ts-ignore
 					d[i] = deepTree(arr, "desc");
 				}
 

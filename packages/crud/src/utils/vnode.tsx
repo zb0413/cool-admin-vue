@@ -39,7 +39,7 @@ export function parseNode(vnode: any, options: Options): VNode {
 	let comp: VNode | null = null;
 
 	// 插槽模式渲染
-	if (vnode.name.includes("slot-")) {
+	if (vnode.name?.includes("slot-")) {
 		const rn = slots[vnode.name];
 
 		if (rn) {
@@ -110,6 +110,7 @@ export function parseNode(vnode: any, options: Options): VNode {
 
 // 渲染节点
 export function renderNode(vnode: any, options: Options) {
+	const config = useConfig();
 	const { item, scope, children, _data, render } = options || {};
 
 	if (!vnode) {
@@ -132,11 +133,11 @@ export function renderNode(vnode: any, options: Options) {
 
 			switch (item.component?.name) {
 				case "el-input":
-					placeholder = "请填写";
+					placeholder = config.dict.label.placeholder;
 					break;
 
 				case "el-select":
-					placeholder = "请选择";
+					placeholder = config.dict.label.placeholderSelect;
 					break;
 
 				default:

@@ -1,14 +1,24 @@
 <template>
-	<div class="cl-image" :style="{
-		justifyContent: justify,
-		height: style.h
-	}">
-		<el-image :src="urls[0]" :fit="fit" :lazy="lazy" :preview-src-list="urls" :style="{
-			height: style.h,
-			width: style.w
-		}" preview-teleported>
+	<div
+		class="cl-image"
+		:style="{
+			justifyContent: justify,
+			height: style.h
+		}"
+	>
+		<el-image
+			:src="urls[0]"
+			:fit="fit"
+			:lazy="lazy"
+			:preview-src-list="urls"
+			:style="{
+				height: style.h,
+				width: style.w
+			}"
+			preview-teleported
+		>
 			<template #error>
-				<div class="image-slot">
+				<div class="cl-image__slot">
 					<el-icon :size="20"><picture-filled /></el-icon>
 				</div>
 			</template>
@@ -17,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { PropType, computed, defineComponent } from "vue";
+import { type PropType, computed, defineComponent } from "vue";
 import { isArray, isNumber, isString } from "lodash-es";
 import { PictureFilled } from "@element-plus/icons-vue";
 import { parsePx } from "/@/cool/utils";
@@ -38,7 +48,7 @@ export default defineComponent({
 		},
 		lazy: Boolean,
 		fit: {
-			type: String as PropType<'' | 'contain' | 'cover' | 'none' | 'fill' | 'scale-down'>,
+			type: String as PropType<"" | "contain" | "cover" | "none" | "fill" | "scale-down">,
 			default: "cover"
 		},
 		justify: {
@@ -81,20 +91,13 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .cl-image {
-	display: flex;
-	align-items: center;
-
-	.el-image {
-		display: block;
-
-		.image-slot {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			height: 100%;
-			background-color: #f7f7f7;
-			border-radius: 4px;
-		}
+	&__slot {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		background-color: #f7f7f7;
+		border-radius: 4px;
 	}
 }
 </style>

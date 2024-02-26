@@ -7,6 +7,15 @@ export default defineComponent({
 	name: "cl-search",
 
 	props: {
+		inline: {
+			type: Boolean,
+			default: true
+		},
+		props: {
+			type: Object,
+			default: () => {}
+		},
+
 		// 表单值
 		data: {
 			type: Object,
@@ -33,6 +42,8 @@ export default defineComponent({
 		// 搜索时钩子
 		onSearch: Function
 	},
+
+	emits: ["reset"],
 
 	setup(props, { slots, expose, emit }) {
 		const { crud } = useCore();
@@ -85,8 +96,20 @@ export default defineComponent({
 
 		// 重置
 		function reset() {
+			const d: any = {};
+
+			config.items?.map((e) => {
+				d[e.prop!] = undefined;
+			});
+
+			// 重置表单
 			Form.value?.reset();
-			emit("reset");
+
+			// 列表刷新
+			crud.refresh(d);
+
+			// 重置事件
+			emit("reset", d);
 		}
 
 		expose({
@@ -100,6 +123,7 @@ export default defineComponent({
 				op: {
 					hidden: true
 				},
+				props: config.props,
 				items: config.items,
 				form: config.data,
 				on: {
@@ -115,12 +139,18 @@ export default defineComponent({
 				isEmpty(config.items) || (
 					<div class="cl-search">
 						{h(
-							<cl-form ref={Form} inner inline />,
+							<cl-form
+								ref={Form}
+								inner
+								inline={config.inline}
+								enable-plugin={false}
+							/>,
 							{},
 							{
 								append() {
 									return (
-										<el-form-item>
+										<el-form-item label=" " class="cl-search__btns">
+											{/* 搜索按钮 */}
 											<el-button
 												type="primary"
 												loading={loading.value}
@@ -130,11 +160,16 @@ export default defineComponent({
 												}}>
 												{crud.dict.label.search}
 											</el-button>
+
+											{/* 重置按钮 */}
 											{config.resetBtn && (
 												<el-button size={style.size} onClick={reset}>
 													{crud.dict.label.reset}
 												</el-button>
 											)}
+
+											{/* 自定义按钮 */}
+											{slots?.buttons?.(Form.value?.form)}
 										</el-form-item>
 									);
 								},

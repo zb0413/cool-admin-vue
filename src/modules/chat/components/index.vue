@@ -1,6 +1,6 @@
 <template>
 	<div class="cl-chat__wrap">
-		<el-badge :value="unCount">
+		<el-badge :value="unCount" :hidden="!unCount">
 			<div class="cl-chat__icon" @click="open">
 				<cl-svg name="icon-notice" :size="16" />
 			</div>
@@ -10,11 +10,11 @@
 		<cl-dialog
 			v-model="visible"
 			title="聊天窗口"
-			height="700px"
+			height="70vh"
 			width="1200px"
 			padding="0"
 			keep-alive
-			:ref="setRefs('dialog')"
+			:scrollbar="false"
 			:close-on-click-modal="false"
 			close-on-press-escape
 			:controls="['slot-expand', 'cl-flex1', 'fullscreen', 'close']"
@@ -55,7 +55,7 @@ import { nextTick, provide, ref } from "vue";
 import dayjs from "dayjs";
 import { useCool, config, module, useBrowser } from "/@/cool";
 import { useBase } from "/$/base";
-import { Notebook, ArrowLeft, BellFilled } from "@element-plus/icons-vue";
+import { Notebook, ArrowLeft } from "@element-plus/icons-vue";
 import { debounce } from "lodash-es";
 // import io from "socket.io-client";
 import { Socket } from "socket.io-client";
@@ -64,7 +64,7 @@ import ChatSession from "./session.vue";
 import { Chat } from "../types";
 import { useStore } from "../store";
 
-const { mitt, refs, setRefs } = useCool();
+// const { mitt } = useCool();
 const { browser, onScreenChange } = useBrowser();
 
 // 缓存
@@ -74,7 +74,7 @@ const { session, message } = useStore();
 const { user } = useBase();
 
 // 模块配置
-const { options } = module.get("chat");
+// const { options } = module.get("chat");
 
 // 是否可见
 const visible = ref(false);
