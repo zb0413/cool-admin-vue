@@ -4,7 +4,7 @@ export declare function useTable(props: any): {
     config: {
         columns: {
             [x: string]: any;
-            type: "op" | "expand" | "selection" | "index";
+            type: ClTable.ColumnType;
             hidden: boolean | {
                 value: boolean;
             };
@@ -13,15 +13,15 @@ export declare function useTable(props: any): {
                 name?: string | undefined;
                 options?: {
                     [x: string]: any;
-                    label: string;
-                    value: any;
+                    label?: string | undefined;
+                    value?: any;
                     color?: string | undefined;
                     type?: string | undefined;
                 }[] | {
                     value: {
                         [x: string]: any;
-                        label: string;
-                        value: any;
+                        label?: string | undefined;
+                        value?: any;
                         color?: string | undefined;
                         type?: string | undefined;
                     }[];
@@ -36,29 +36,73 @@ export declare function useTable(props: any): {
                     };
                 } | undefined;
                 style?: obj | undefined;
-                functionSlot?: boolean | undefined;
+                slots?: {
+                    [key: string]: (data?: any) => any;
+                } | undefined;
                 vm?: any;
+            };
+            search: {
+                isInput: boolean;
+                value: any;
+                refreshOnChange: {
+                    valueOf: () => boolean;
+                };
+                component: {
+                    [x: string]: any;
+                    name?: string | undefined;
+                    options?: {
+                        [x: string]: any;
+                        label?: string | undefined;
+                        value?: any;
+                        color?: string | undefined;
+                        type?: string | undefined;
+                    }[] | {
+                        value: {
+                            [x: string]: any;
+                            label?: string | undefined;
+                            value?: any;
+                            color?: string | undefined;
+                            type?: string | undefined;
+                        }[];
+                    } | undefined;
+                    props?: {
+                        [x: string]: any;
+                        onChange?: ((value: any) => void) | undefined;
+                    } | {
+                        value: {
+                            [x: string]: any;
+                            onChange?: ((value: any) => void) | undefined;
+                        };
+                    } | undefined;
+                    style?: obj | undefined;
+                    slots?: {
+                        [key: string]: (data?: any) => any;
+                    } | undefined;
+                    vm?: any;
+                };
             };
             dict: {
                 [x: string]: any;
-                label: string;
-                value: any;
+                label?: string | undefined;
+                value?: any;
                 color?: string | undefined;
                 type?: string | undefined;
             }[] | {
                 value: {
                     [x: string]: any;
-                    label: string;
-                    value: any;
+                    label?: string | undefined;
+                    value?: any;
                     color?: string | undefined;
                     type?: string | undefined;
                 }[];
             };
             dictFormatter: (values: DictOptions) => string;
             dictColor: boolean;
+            dictSeparator: string;
+            dictAllLevels: boolean;
             buttons: ((options: {
-                scope: obj;
-            }) => ClTable.OpButton) | ("info" | "delete" | "edit" | `slot-${string}` | {
+                scope: any;
+            }) => ClTable.OpButton) | ("info" | "delete" | "edit" | AnyString | `slot-${string}` | {
                 [x: string]: any;
                 label: string;
                 type?: string | undefined;
@@ -67,12 +111,10 @@ export declare function useTable(props: any): {
                     scope: obj;
                 }) => void;
             })[];
-            align: "center" | "left" | "right";
-            label: string | {
-                value: string;
-            };
+            align: ElementPlus.Align;
+            label: any;
             className: string;
-            prop: string;
+            prop: string & {};
             orderNum: number;
             width: number;
             minWidth: string | number;
@@ -85,7 +127,7 @@ export declare function useTable(props: any): {
             sortBy: string | any[] | ((row: any, index: number) => any);
             resizable: boolean;
             columnKey: string;
-            headerAlign: string;
+            headerAlign: ElementPlus.Align;
             showOverflowTooltip: boolean;
             fixed: string | boolean;
             formatter: (row: any, column: any, value: any, index: number) => any;
@@ -101,13 +143,12 @@ export declare function useTable(props: any): {
             children: any[];
         }[];
         autoHeight: boolean;
-        height: string | number;
+        height: any;
         contextMenu: ("info" | "update" | "delete" | "edit" | "refresh" | {
             [x: string]: any;
             label: string;
-            icon?: string | undefined;
-            prefixIcon?: string | undefined;
-            suffixIcon?: string | undefined;
+            prefixIcon?: any;
+            suffixIcon?: any;
             ellipsis?: boolean | undefined;
             disabled?: boolean | undefined;
             hidden?: boolean | undefined;
@@ -122,6 +163,7 @@ export declare function useTable(props: any): {
         sortRefresh: boolean;
         emptyText: string;
         rowKey: string;
+        plugins?: ClTable.Plugin[] | undefined;
         onRowContextmenu?: ((row: any, column: any, event: any) => void) | undefined;
     };
 };
@@ -132,3 +174,4 @@ export * from "./render";
 export * from "./row";
 export * from "./selection";
 export * from "./sort";
+export * from "./header";

@@ -78,6 +78,7 @@ export default defineComponent({
 		function reset() {
 			Form.value?.reset();
 			emit("reset");
+			search();
 		}
 
 		// 清空数据
@@ -112,7 +113,7 @@ export default defineComponent({
 
 		// 渲染表单
 		function renderForm() {
-			return h(<cl-form ref={Form} inner />, {}, slots);
+			return h(<cl-form ref={Form} inner enable-plugin={false} />, {}, slots);
 		}
 
 		// 渲染底部
@@ -160,9 +161,9 @@ export default defineComponent({
 					v-model={visible.value}
 					direction="rtl"
 					with-header={false}
-					size={browser.isMini ? "100%" : props.size}>
+					size={browser.isMini ? "100%" : config.size}>
 					<div class="cl-adv-search__header">
-						<span class="text">{props.title || crud.dict.label.advSearch}</span>
+						<span class="text">{config.title || crud.dict.label.advSearch}</span>
 						<el-icon size={20} onClick={close}>
 							<Close />
 						</el-icon>

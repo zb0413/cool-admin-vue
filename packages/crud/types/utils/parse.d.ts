@@ -12,12 +12,12 @@ export declare function parseTableDict(value: any, item: ClTable.Column): string
 /**
  * 解析 table.op.buttons
  */
-export declare function parseTableOpButtons(buttons: any, { scope }: any): any;
+export declare function parseTableOpButtons(buttons: any[], { scope }: any): any[];
 /**
  * 解析扩展组件
  */
 export declare function parseExtensionComponent(vnode: any): {
-    children: JSX.Element;
+    children: any;
 } | {
     children?: undefined;
 };

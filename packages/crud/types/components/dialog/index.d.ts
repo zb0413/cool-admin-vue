@@ -25,9 +25,13 @@ declare const _default: import("vue").DefineComponent<{
     };
     hideHeader: BooleanConstructor;
     beforeClose: FunctionConstructor;
+    scrollbar: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
 }, () => import("vue").VNode<import("vue").RendererNode, import("vue").RendererElement, {
     [key: string]: any;
-}>, unknown, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, ("update:modelValue" | "fullscreen-change")[], "update:modelValue" | "fullscreen-change", import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps, Readonly<import("vue").ExtractPropTypes<{
+}>, unknown, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, ("update:modelValue" | "fullscreen-change")[], "update:modelValue" | "fullscreen-change", import("vue").PublicProps, Readonly<import("vue").ExtractPropTypes<{
     modelValue: {
         type: BooleanConstructor;
         default: boolean;
@@ -54,6 +58,10 @@ declare const _default: import("vue").DefineComponent<{
     };
     hideHeader: BooleanConstructor;
     beforeClose: FunctionConstructor;
+    scrollbar: {
+        type: BooleanConstructor;
+        default: boolean;
+    };
 }>> & {
     "onUpdate:modelValue"?: ((...args: any[]) => any) | undefined;
     "onFullscreen-change"?: ((...args: any[]) => any) | undefined;
@@ -66,5 +74,6 @@ declare const _default: import("vue").DefineComponent<{
     controls: unknown[];
     fullscreen: boolean;
     modelValue: boolean;
+    scrollbar: boolean;
 }, {}>;
 export default _default;

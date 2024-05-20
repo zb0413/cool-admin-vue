@@ -6,6 +6,9 @@ import { useBase } from "/$/base";
 import { Loading } from "../utils";
 import { config } from "/@/config";
 
+// 基本路径
+const baseUrl = import.meta.env.BASE_URL;
+
 // 扫描文件
 const files = import.meta.glob(["/src/modules/*/{views,pages}/**/*", "!**/components"]);
 
@@ -18,14 +21,18 @@ const routes: RouteRecordRaw[] = [
 		children: []
 	},
 	{
-		path: "/:pathMatch(.*)*",
+		path: "/:catchAll(.*)",
+		name: "404",
 		component: () => import("/$/base/pages/error/404.vue")
 	}
 ];
 
 // 创建路由器
 const router = createRouter({
-	history: config.app.router.mode == "history" ? createWebHistory() : createWebHashHistory(),
+	history:
+		config.app.router.mode == "history"
+			? createWebHistory(baseUrl)
+			: createWebHashHistory(baseUrl),
 	routes
 }) as Router;
 
@@ -174,9 +181,8 @@ router.beforeEach(async (to, from, next) => {
 	if (!route?.components) {
 		next(user.token ? "/404" : "/login");
 	} else {
-		// 注册后重定向
 		if (!isReg) {
-			next({ ...to, ...route });
+			next(to.fullPath);
 		} else {
 			// 登录成功
 			if (user.token) {

@@ -1,8 +1,7 @@
-import { ElMessage } from "element-plus";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import { deepTree, revDeepTree, storage } from "/@/cool/utils";
-import { isEmpty, orderBy } from "lodash-es";
+import { cloneDeep, isArray, isEmpty, orderBy } from "lodash-es";
 import { router, service } from "/@/cool";
 import { revisePath } from "../utils";
 import { Menu } from "../types";
@@ -19,9 +18,6 @@ export const useMenuStore = defineStore("menu", function () {
 	// 菜单组
 	const group = ref<Menu.List>(data["base.menuGroup"] || []);
 
-	// 顶部菜单序号
-	const index = ref(0);
-
 	// 左侧菜单列表
 	const list = ref<Menu.List>([]);
 
@@ -29,15 +25,10 @@ export const useMenuStore = defineStore("menu", function () {
 	const perms = ref<any[]>(data["base.menuPerms"] || []);
 
 	// 设置左侧菜单
-	function setMenu(i?: number) {
-		if (i === undefined) {
-			i = index.value;
-		}
-
+	function setMenu(i: number = 0) {
 		// 显示分组显示菜单
 		if (config.app.menu.isGroup) {
-			list.value = group.value[i]?.children || [];
-			index.value = i;
+			list.value = group.value.filter((e) => e.isShow)[i]?.children || [];
 		} else {
 			list.value = group.value;
 		}
@@ -106,7 +97,7 @@ export const useMenuStore = defineStore("menu", function () {
 
 	// 设置菜单组
 	function setGroup(list: Menu.List) {
-		group.value = orderBy(list, "orderNum");
+		group.value = orderBy(deepTree(list), "orderNum");
 		storage.set("base.menuGroup", group.value);
 	}
 
@@ -125,9 +116,10 @@ export const useMenuStore = defineStore("menu", function () {
 						isShow,
 						meta: {
 							...e.meta,
-							label: e.name,
+							label: e.name, // 菜单名称的唯一标识
 							keepAlive: e.keepAlive || 0
 						},
+						name: `${e.name}-${e.id}`, // 避免重复命名之前的冲突
 						children: []
 					};
 				});
@@ -136,13 +128,13 @@ export const useMenuStore = defineStore("menu", function () {
 			setPerms(res.perms || []);
 
 			// 设置菜单组
-			setGroup(deepTree(list));
+			setGroup(list);
 
 			// 设置视图路由
-			setRoutes(list.filter((e) => e.type == 1));
+			setRoutes(list);
 
 			// 设置菜单
-			setMenu(index.value);
+			setMenu();
 
 			return list;
 		}
@@ -159,38 +151,34 @@ export const useMenuStore = defineStore("menu", function () {
 	}
 
 	// 获取菜单路径
-	function getPath(item?: Menu.Item) {
+	function getPath(data: Menu.Item | Menu.List) {
+		const list = isArray(data) ? data : [data];
+
 		let path = "";
 
-		switch (item?.type) {
-			case 0:
-				function deep(arr: Menu.List) {
-					arr.forEach((e: Menu.Item) => {
-						if (e.type == 1) {
-							if (!path) {
-								path = e.path;
-							}
-						} else {
-							deep(e.children || []);
+		function deep(arr: Menu.List) {
+			arr.forEach((e: Menu.Item) => {
+				switch (e.type) {
+					case 0:
+						deep(e.children || []);
+						break;
+					case 1:
+						if (!path) {
+							path = e.path;
 						}
-					});
+						break;
 				}
-
-				deep(item.children || group.value || []);
-				break;
-
-			case 1:
-				path = item.path;
-				break;
+			});
 		}
 
-		return path || "/";
+		deep(list);
+
+		return path;
 	}
 
 	return {
 		routes,
 		group,
-		index,
 		list,
 		perms,
 		get,

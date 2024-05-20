@@ -1,5 +1,5 @@
-import { defineComponent, PropType } from "vue";
-import "./index.scss";
+import { defineComponent, type PropType } from "vue";
+import { UserFilled } from "@element-plus/icons-vue";
 
 export default defineComponent({
 	name: "cl-avatar",
@@ -7,9 +7,18 @@ export default defineComponent({
 	props: {
 		modelValue: String,
 		src: String,
-		icon: null,
-		size: [String, Number] as PropType<"large" | "default" | "small" | number>,
-		shape: String as PropType<"circle" | "square">,
+		icon: {
+			type: null,
+			default: UserFilled
+		},
+		size: {
+			type: [String, Number] as PropType<"large" | "default" | "small" | number>,
+			default: 40
+		},
+		shape: {
+			type: String as PropType<"circle" | "square">,
+			default: "square"
+		},
 		fit: {
 			type: String as PropType<"fill" | "contain" | "cover" | "none" | "scale-down">,
 			default: "cover"
@@ -18,11 +27,18 @@ export default defineComponent({
 
 	setup(props) {
 		return () => {
+			const height = props.size + "px";
+
 			return (
-				<div class="cl-avatar">
+				<div
+					class="cl-avatar"
+					style={{
+						height
+					}}
+				>
 					<el-avatar
 						style={{
-							height: props.size + "px",
+							height,
 							width: props.size + "px"
 						}}
 						{...{

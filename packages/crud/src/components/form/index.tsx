@@ -1,7 +1,7 @@
 import { defineComponent, h, nextTick } from "vue";
-import { cloneDeep, isBoolean, isEmpty } from "lodash-es";
+import { cloneDeep, isBoolean } from "lodash-es";
 import { useAction, useForm, usePlugins, useTabs } from "./helper";
-import { useBrowser, useConfig, useElApi } from "../../hooks";
+import { useBrowser, useConfig, useElApi, useRefs } from "../../hooks";
 import { getValue, merge } from "../../utils";
 import formHook from "../../utils/form-hook";
 import { renderNode } from "../../utils/vnode";
@@ -12,10 +12,15 @@ export default defineComponent({
 
 	props: {
 		inner: Boolean,
-		inline: Boolean
+		inline: Boolean,
+		enablePlugin: {
+			type: Boolean,
+			default: true
+		}
 	},
 
 	setup(props, { expose, slots }) {
+		const { refs, setRefs } = useRefs();
 		const { style, dict } = useConfig();
 		const browser = useBrowser();
 		const { Form, config, form, visible, saving, loading, disabled } = useForm();
@@ -39,7 +44,7 @@ export default defineComponent({
 		);
 
 		// 插件
-		const plugin = usePlugins({ visible });
+		const plugin = usePlugins(props.enablePlugin, { visible });
 
 		// 显示加载中
 		function showLoading() {
@@ -118,21 +123,32 @@ export default defineComponent({
 					// 拷贝表单值
 					const d = cloneDeep(form);
 
-					// 过滤隐藏的表单项
 					config.items.forEach((e) => {
-						if (e._hidden) {
+						function deep(e: ClForm.Item) {
 							if (e.prop) {
-								delete d[e.prop];
+								// 过滤隐藏的表单项
+								if (e._hidden) {
+									if (e.prop) {
+										delete d[e.prop];
+									}
+								}
+
+								// hook 提交处理
+								if (e.hook) {
+									formHook.submit({
+										...e,
+										value: e.prop ? d[e.prop] : undefined,
+										form: d
+									});
+								}
+							}
+
+							if (e.children) {
+								e.children.forEach(deep);
 							}
 						}
 
-						if (e.hook) {
-							formHook.submit({
-								...e,
-								value: e.prop ? d[e.prop] : undefined,
-								form: d
-							});
-						}
+						deep(e);
 					});
 
 					// 处理 "-" 多层级
@@ -151,7 +167,7 @@ export default defineComponent({
 							let f: any = d[a];
 
 							// 设置默认值
-							arr.forEach((e: any) => {
+							arr.forEach((e) => {
 								if (!f[e]) {
 									f[e] = {};
 								}
@@ -180,16 +196,12 @@ export default defineComponent({
 						done();
 					}
 				} else {
-					// 判断是否使用form-tabs，切换到对应的选项卡
-					const keys = Object.keys(error);
-
-					if (Tabs.active.value) {
-						const item = config.items.find((e) => e.prop === keys[0]);
-
-						if (item) {
-							Tabs.set(item.group);
-						}
-					}
+					// 切换到对应的选项卡
+					Tabs.toGroup({
+						refs,
+						config,
+						prop: Object.keys(error)[0]
+					});
 				}
 			});
 		}
@@ -252,7 +264,7 @@ export default defineComponent({
 			}
 
 			// 设置表单数据
-			config.items.map((e) => {
+			config.items.forEach((e) => {
 				function deep(e: ClForm.Item) {
 					if (e.prop) {
 						// 解析 prop
@@ -263,7 +275,7 @@ export default defineComponent({
 						// prop 合并
 						Tabs.mergeProp(e);
 
-						// 绑定值
+						// hook 绑定值
 						formHook.bind({
 							...e,
 							value: form[e.prop] !== undefined ? form[e.prop] : cloneDeep(e.value),
@@ -277,16 +289,16 @@ export default defineComponent({
 								message: `${e.label}${dict.label.nonEmpty}`
 							};
 						}
-
-						// 子集
-						if (e.children) {
-							e.children.forEach(deep);
-						}
 					}
 
 					// 设置 tabs 默认值
 					if (e.type == "tabs") {
 						Tabs.set(e.value);
+					}
+
+					// 子集
+					if (e.children) {
+						e.children.forEach(deep);
 					}
 				}
 
@@ -315,11 +327,19 @@ export default defineComponent({
 		// 绑定表单数据
 		function bindForm(data: any) {
 			config.items.forEach((e) => {
-				formHook.bind({
-					...e,
-					value: e.prop ? data[e.prop] : undefined,
-					form: data
-				});
+				function deep(e: ClForm.Item) {
+					formHook.bind({
+						...e,
+						value: e.prop ? data[e.prop] : undefined,
+						form: data
+					});
+
+					if (e.children) {
+						e.children.forEach(deep);
+					}
+				}
+
+				deep(e);
 			});
 
 			Object.assign(form, data);
@@ -330,7 +350,9 @@ export default defineComponent({
 			const { isDisabled } = config._data;
 
 			if (e.type == "tabs") {
-				return <cl-form-tabs v-model={Tabs.active.value} {...e.props} />;
+				return (
+					<cl-form-tabs v-model={Tabs.active.value} {...e.props} onChange={Tabs.onLoad} />
+				);
 			}
 
 			// 是否隐藏
@@ -339,113 +361,116 @@ export default defineComponent({
 			});
 
 			// 分组显示
-			const inGroup =
-				isEmpty(Tabs.active.value) || isEmpty(e.group)
-					? true
-					: e.group === Tabs.active.value;
+			const inGroup = e.group ? e.group === Tabs.active.value : true;
+
+			// 是否已加载完成
+			const isLoaded = e.component && Tabs.isLoaded(e.group);
 
 			// 表单项
-			const FormItem = e.component
-				? h(
-						<el-form-item
-							class={{
-								"no-label": !(e.renderLabel || e.label),
-								"has-children": !!e.children
-							}}
-							label-width={props.inline ? "auto" : ""}
-							label={e.label}
-							prop={e.prop}
-							rules={isDisabled ? null : e.rules}
-							v-show={inGroup}
-						/>,
-						e.props,
-						{
-							label() {
-								return e.renderLabel
-									? renderNode(e.renderLabel, {
-											scope: form,
-											render: "slot",
-											slots
-									  })
-									: e.label;
-							},
-							default() {
-								return (
-									<div>
-										<div class="cl-form-item">
-											{["prepend", "component", "append"]
-												.filter((k) => e[k])
-												.map((name) => {
-													const children = e.children && (
-														<div class="cl-form-item__children">
-															<el-row gutter={10}>
-																{e.children.map(renderFormItem)}
-															</el-row>
-														</div>
-													);
+			const FormItem = h(
+				<el-form-item
+					class={{
+						"no-label": !(e.renderLabel || e.label),
+						"has-children": !!e.children
+					}}
+					key={e.prop}
+					data-group={e.group || "-"}
+					data-prop={e.prop || "-"}
+					label-width={props.inline ? "auto" : ""}
+					label={e.label}
+					prop={e.prop}
+					rules={isDisabled ? null : e.rules}
+					required={e._hidden ? false : e.required}
+					v-show={inGroup && !e._hidden}
+				/>,
+				e.props,
+				{
+					label() {
+						return e.renderLabel
+							? renderNode(e.renderLabel, {
+									scope: form,
+									render: "slot",
+									slots
+								})
+							: e.label;
+					},
+					default() {
+						return (
+							<div>
+								<div class="cl-form-item">
+									{["prepend", "component", "append"]
+										.filter((k) => e[k])
+										.map((name) => {
+											const children = e.children && (
+												<div class="cl-form-item__children">
+													<el-row gutter={10}>
+														{e.children.map(renderFormItem)}
+													</el-row>
+												</div>
+											);
 
-													const Item = renderNode(e[name], {
-														item: e,
-														prop: e.prop,
-														scope: form,
-														slots,
-														children,
-														_data: {
-															isDisabled
+											const Item = renderNode(e[name], {
+												item: e,
+												prop: e.prop,
+												scope: form,
+												slots,
+												children,
+												_data: {
+													isDisabled
+												}
+											});
+
+											return (
+												<div
+													v-show={!e.collapse}
+													class={[
+														`cl-form-item__${name}`,
+														{
+															flex1: e.flex !== false
 														}
-													});
+													]}
+													style={e[name].style}>
+													{Item}
+												</div>
+											);
+										})}
+								</div>
 
-													return (
-														<div
-															v-show={!e.collapse}
-															class={[
-																`cl-form-item__${name}`,
-																{
-																	flex1: e.flex !== false
-																}
-															]}
-															style={e[name].style}>
-															{Item}
-														</div>
-													);
-												})}
-										</div>
-
-										{isBoolean(e.collapse) && (
-											<div
-												class="cl-form-item__collapse"
-												onClick={() => {
-													Action.collapseItem(e);
-												}}>
-												<el-divider content-position="center">
-													{e.collapse
-														? dict.label.seeMore
-														: dict.label.hideContent}
-												</el-divider>
-											</div>
-										)}
+								{isBoolean(e.collapse) && (
+									<div
+										class="cl-form-item__collapse"
+										onClick={() => {
+											Action.collapseItem(e);
+										}}>
+										<el-divider content-position="center">
+											{e.collapse
+												? dict.label.seeMore
+												: dict.label.hideContent}
+										</el-divider>
 									</div>
-								);
-							}
-						}
-				  )
-				: null;
+								)}
+							</div>
+						);
+					}
+				}
+			);
 
-			// 隐藏
-			if (e._hidden) {
-				return null;
+			let span = e.span || style.form.span;
+
+			if (browser.isMini) {
+				span = 24;
 			}
 
-			// 行内
-			if (props.inline) {
-				return FormItem;
-			}
-
-			return (
-				<el-col key={e.prop} span={e.span || style.form.span} {...e.col}>
+			// 是否行内
+			const Item = props.inline ? (
+				FormItem
+			) : (
+				<el-col span={span} {...e.col} v-show={inGroup && !e._hidden}>
 					{FormItem}
 				</el-col>
 			);
+
+			return isLoaded ? Item : null;
 		}
 
 		// 渲染表单
@@ -453,15 +478,18 @@ export default defineComponent({
 			// 表单项列表
 			const children = config.items.map(renderFormItem);
 
+			// 表单标签位置
+			const labelPosition =
+				browser.isMini && !props.inline
+					? "top"
+					: config.props.labelPosition || style.form.labelPosition;
+
 			return (
-				<div class="cl-form__container">
+				<div class="cl-form__container" ref={setRefs("form")}>
 					{h(
 						<el-form
 							ref={Form}
 							size={style.size}
-							label-position={
-								browser.isMini && !props.inline ? "top" : style.form.labelPostion
-							}
 							label-width={style.form.labelWidth}
 							inline={props.inline}
 							disabled={saving.value}
@@ -472,25 +500,25 @@ export default defineComponent({
 								e.preventDefault();
 							}}
 						/>,
-						config.props,
+						{
+							...config.props,
+							labelPosition
+						},
 						{
 							default: () => {
+								const items = [
+									slots.prepend && slots.prepend({ scope: form }),
+									children,
+									slots.append && slots.append({ scope: form })
+								];
+
 								return (
-									<div class="cl-form__items">
-										{/* 前 */}
-										{slots.prepend && slots.prepend({ scope: form })}
-
-										{/* 项 */}
+									<div class="cl-form__items" v-loading={loading.value}>
 										{props.inline ? (
-											children
+											items
 										) : (
-											<el-row gutter={10} v-loading={loading.value}>
-												{children}
-											</el-row>
+											<el-row gutter={10}>{items}</el-row>
 										)}
-
-										{/* 后 */}
-										{slots.append && slots.append({ scope: form })}
 									</div>
 								);
 							}
@@ -537,14 +565,15 @@ export default defineComponent({
 						return renderNode(e, {
 							scope: form,
 							slots,
-							custom({ scope }) {
+							custom() {
 								return (
 									<el-button
 										text
 										type={e.type}
 										bg
+										{...e.props}
 										onClick={() => {
-											e.onClick({ scope });
+											e.onClick({ scope: form });
 										}}>
 										{e.label}
 									</el-button>
@@ -566,6 +595,7 @@ export default defineComponent({
 		}
 
 		expose({
+			refs,
 			Form,
 			visible,
 			saving,
@@ -589,15 +619,15 @@ export default defineComponent({
 		});
 
 		return () => {
-			const Form = (
-				<div class="cl-form">
-					{renderContainer()}
-					{renderFooter()}
-				</div>
-			);
-
 			if (props.inner) {
-				return visible.value && Form;
+				return (
+					visible.value && (
+						<div class="cl-form">
+							{renderContainer()}
+							{renderFooter()}
+						</div>
+					)
+				);
 			} else {
 				return h(
 					<cl-dialog v-model={visible.value} class="cl-form" />,

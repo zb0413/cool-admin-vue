@@ -31,15 +31,12 @@ const regs: Map<string, any> = new Map();
 // 解析节点
 export function parseNode(vnode: any, options: Options): VNode {
 	const { scope, prop, slots, children, _data } = options || [];
-	const {
-		render: { functionSlots }
-	} = useConfig();
 
 	// 渲染后组件
 	let comp: VNode | null = null;
 
 	// 插槽模式渲染
-	if (vnode.name.includes("slot-")) {
+	if (vnode.name?.includes("slot-")) {
 		const rn = slots[vnode.name];
 
 		if (rn) {
@@ -85,17 +82,16 @@ export function parseNode(vnode: any, options: Options): VNode {
 	if (vnode.vm) {
 		comp = h(regs.get(vnode.name), props);
 	} else {
-		// 是否函数式插槽
-		const isFunctionSlot =
-			!functionSlots.exclude?.includes(vnode.name) &&
-			(vnode.functionSlot === undefined ? true : vnode.functionSlot);
+		const slots = {
+			...vnode.slots
+		};
+
+		if (children) {
+			slots.default = () => children;
+		}
 
 		// 渲染组件
-		comp = h(
-			toRaw(resolveComponent(vnode.name)),
-			props,
-			isFunctionSlot ? () => children : children
-		);
+		comp = h(toRaw(resolveComponent(vnode.name)), props, slots);
 	}
 
 	// 挂载到 refs 中
@@ -110,6 +106,7 @@ export function parseNode(vnode: any, options: Options): VNode {
 
 // 渲染节点
 export function renderNode(vnode: any, options: Options) {
+	const config = useConfig();
 	const { item, scope, children, _data, render } = options || {};
 
 	if (!vnode) {
@@ -132,11 +129,11 @@ export function renderNode(vnode: any, options: Options) {
 
 			switch (item.component?.name) {
 				case "el-input":
-					placeholder = "请填写";
+					placeholder = config.dict.label.placeholder;
 					break;
 
 				case "el-select":
-					placeholder = "请选择";
+					placeholder = config.dict.label.placeholderSelect;
 					break;
 
 				default:

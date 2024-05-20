@@ -4,8 +4,8 @@ export declare function useForm(): {
     config: {
         [x: string]: any;
         title?: any;
-        height?: string | undefined;
-        width?: string | undefined;
+        height?: any;
+        width?: any;
         props: {
             [x: string]: any;
             inline?: boolean | undefined;
@@ -23,14 +23,16 @@ export declare function useForm(): {
         items: {
             [x: string]: any;
             type?: "tabs" | undefined;
-            prop?: string | undefined;
+            prop?: (string & {}) | undefined;
             props?: {
                 [x: string]: any;
                 labels?: {
+                    [x: string]: any;
                     label: string;
                     value: string;
                     name?: string | undefined;
                     icon?: any;
+                    lazy?: boolean | undefined;
                 }[] | undefined;
                 justify?: "center" | "left" | "right" | undefined;
                 color?: string | undefined;
@@ -54,35 +56,33 @@ export declare function useForm(): {
                 xl: any;
                 tag: string;
             } | undefined;
-            hook?: string | {
-                bind?: Hook.FormPipe | Hook.FormPipe[] | undefined;
-                submit?: Hook.FormPipe | Hook.FormPipe[] | undefined;
-            } | undefined;
             group?: string | undefined;
             collapse?: boolean | undefined;
             value?: any;
             label?: string | undefined;
             renderLabel?: any;
             flex?: boolean | undefined;
+            hook?: ClForm.HookKey | {
+                bind?: ClForm.HookPipe | ClForm.HookPipe[] | undefined;
+                submit?: ClForm.HookPipe | ClForm.HookPipe[] | undefined;
+            } | undefined;
             hidden?: boolean | ((options: {
                 scope: obj;
-            }) => boolean) | {
-                value: boolean;
-            } | undefined;
+            }) => boolean) | undefined;
             prepend?: {
                 [x: string]: any;
                 name?: string | undefined;
                 options?: {
                     [x: string]: any;
-                    label: string;
-                    value: any;
+                    label?: string | undefined;
+                    value?: any;
                     color?: string | undefined;
                     type?: string | undefined;
                 }[] | {
                     value: {
                         [x: string]: any;
-                        label: string;
-                        value: any;
+                        label?: string | undefined;
+                        value?: any;
                         color?: string | undefined;
                         type?: string | undefined;
                     }[];
@@ -97,7 +97,9 @@ export declare function useForm(): {
                     };
                 } | undefined;
                 style?: obj | undefined;
-                functionSlot?: boolean | undefined;
+                slots?: {
+                    [key: string]: (data?: any) => any;
+                } | undefined;
                 vm?: any;
             } | undefined;
             component?: {
@@ -105,15 +107,15 @@ export declare function useForm(): {
                 name?: string | undefined;
                 options?: {
                     [x: string]: any;
-                    label: string;
-                    value: any;
+                    label?: string | undefined;
+                    value?: any;
                     color?: string | undefined;
                     type?: string | undefined;
                 }[] | {
                     value: {
                         [x: string]: any;
-                        label: string;
-                        value: any;
+                        label?: string | undefined;
+                        value?: any;
                         color?: string | undefined;
                         type?: string | undefined;
                     }[];
@@ -128,7 +130,9 @@ export declare function useForm(): {
                     };
                 } | undefined;
                 style?: obj | undefined;
-                functionSlot?: boolean | undefined;
+                slots?: {
+                    [key: string]: (data?: any) => any;
+                } | undefined;
                 vm?: any;
             } | undefined;
             append?: {
@@ -136,15 +140,15 @@ export declare function useForm(): {
                 name?: string | undefined;
                 options?: {
                     [x: string]: any;
-                    label: string;
-                    value: any;
+                    label?: string | undefined;
+                    value?: any;
                     color?: string | undefined;
                     type?: string | undefined;
                 }[] | {
                     value: {
                         [x: string]: any;
-                        label: string;
-                        value: any;
+                        label?: string | undefined;
+                        value?: any;
                         color?: string | undefined;
                         type?: string | undefined;
                     }[];
@@ -159,7 +163,9 @@ export declare function useForm(): {
                     };
                 } | undefined;
                 style?: obj | undefined;
-                functionSlot?: boolean | undefined;
+                slots?: {
+                    [key: string]: (data?: any) => any;
+                } | undefined;
                 vm?: any;
             } | undefined;
             rules?: {
@@ -187,9 +193,9 @@ export declare function useForm(): {
         form: obj;
         isReset?: boolean | undefined;
         on?: {
-            open?: ((data: obj) => void) | undefined;
+            open?: ((data: any) => void) | undefined;
             close?: ((action: ClForm.CloseAction, done: fn) => void) | undefined;
-            submit?: ((data: obj, event: {
+            submit?: ((data: any, event: {
                 close: fn;
                 done: fn;
             }) => void) | undefined;
@@ -215,7 +221,7 @@ export declare function useForm(): {
             height?: string | undefined;
             width?: string | undefined;
             hideHeader?: boolean | undefined;
-            controls?: ("close" | "fullscreen")[] | undefined;
+            controls?: ("close" | AnyString | "fullscreen")[] | undefined;
         };
     };
     form: obj;

@@ -24,34 +24,57 @@ export function parseTableDict(value: any, item: ClTable.Column) {
 	const { style } = useConfig();
 
 	// 选项列表
-	const options: DictOptions = cloneDeep(getValue(item.dict || []));
+	const list: DictOptions = cloneDeep(getValue(item.dict || []));
+
+	// 字符串分隔符
+	const separator = item.dictSeparator === undefined ? "," : item.dictSeparator;
 
 	// 设置颜色
 	if (item.dictColor) {
-		options.forEach((e, i) => {
-			e.color = style.colors[i];
+		list.forEach((e, i) => {
+			if (!e.color) {
+				e.color = style.colors[i];
+			}
 		});
 	}
 
-	// 格式化方法
-	const formatter = item.dictFormatter;
+	// 绑定值
+	let values: any[] = [];
 
-	// 多个值
-	const values = isArray(value) ? value : [value];
+	// 格式化值
+	if (isArray(value)) {
+		values = value;
+	} else if (isString(value)) {
+		if (separator) {
+			values = value.split(separator);
+		} else {
+			values = [value];
+		}
+	} else {
+		values = [value];
+	}
 
 	// 返回值
-	const list = values.map((v) => {
-		const d = deepFind(v, options) || { label: v, value: v };
-		delete d.children;
+	const result = values
+		.filter((e) => e !== undefined && e !== null && e !== "")
+		.map((v) => {
+			const d = deepFind(v, list, { allLevels: item.dictAllLevels }) || {
+				label: v,
+				value: v
+			};
 
-		return d;
-	});
+			return {
+				...d,
+				children: []
+			};
+		});
 
-	// 是否格式化
-	if (formatter) {
-		return formatter(list);
+	// 格式化返回
+	if (item.dictFormatter) {
+		return item.dictFormatter(result);
 	} else {
-		return list.map((e) => {
+		// tag 返回
+		return result.map((e) => {
 			return h(
 				<el-tag disable-transitions effect="dark" style="margin: 2px; border: 0" />,
 				e,
@@ -66,14 +89,14 @@ export function parseTableDict(value: any, item: ClTable.Column) {
 /**
  * 解析 table.op.buttons
  */
-export function parseTableOpButtons(buttons: any, { scope }: any) {
+export function parseTableOpButtons(buttons: any[], { scope }: any) {
 	const { crud } = useCore();
 	const { style } = useConfig();
 	const slots = useSlots();
 
-	const list = getValue(buttons, { scope }) || ["edit", "delete"];
+	const list: any[] = getValue(buttons, { scope }) || ["edit", "delete"];
 
-	return list.map((vnode: any) => {
+	return list.map((vnode) => {
 		if (vnode === "info") {
 			return (
 				<el-button
@@ -127,6 +150,7 @@ export function parseTableOpButtons(buttons: any, { scope }: any) {
 								text
 								type={vnode.type}
 								bg
+								{...vnode?.props}
 								onClick={() => {
 									vnode.onClick({ scope });
 								}}>
@@ -159,7 +183,7 @@ export function parseExtensionComponent(vnode: any) {
 						label = e.label;
 						value = e.value;
 					} else {
-						return <cl-error-message title={`组件渲染失败，options 参数错误`} />;
+						return <cl-error-message title={`Component options error`} />;
 					}
 
 					switch (vnode.name) {

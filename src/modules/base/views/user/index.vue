@@ -57,11 +57,11 @@
 </template>
 
 <script lang="ts" name="sys-user" setup>
-import { useTable, useUpsert, useCrud } from "@cool-vue/crud";
+import { useTable, useUpsert, useCrud, setFocus } from "@cool-vue/crud";
 import { useCool } from "/@/cool";
-import { useViewGroup } from "../../hooks";
 import DeptList from "./components/dept-list.vue";
 import UserMove from "./components/user-move.vue";
+import { useViewGroup } from "/@/plugins/view";
 
 const { service, refs, setRefs } = useCool();
 
@@ -296,7 +296,9 @@ const Upsert = useUpsert({
 				})
 			);
 		});
-	}
+	},
+
+	plugins: [setFocus("name")]
 });
 
 // 刷新列表
@@ -313,10 +315,10 @@ function onUserAdd({ id }: Eps.BaseSysDepartmentEntity) {
 
 // 移动成员
 async function toMove(item?: Eps.BaseSysDepartmentEntity) {
-	let ids = [];
+	let ids: number[] = [];
 
 	if (item) {
-		ids = [item.id];
+		ids = [item.id!];
 	} else {
 		ids = Table.value?.selection.map((e) => e.id) || [];
 	}

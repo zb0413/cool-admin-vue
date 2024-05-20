@@ -29,17 +29,36 @@
 
 		<div class="dept-tree__container" @contextmenu.stop.prevent="onContextMenu">
 			<el-scrollbar>
-				<el-tree v-loading="loading" node-key="id" default-expand-all :data="list" :props="{
-					label: 'name'
-				}" :draggable="isDrag" :allow-drag="allowDrag" :allow-drop="allowDrop" :expand-on-click-node="false"
-					@node-contextmenu="onContextMenu">
+				<el-tree
+					v-loading="loading"
+					node-key="id"
+					default-expand-all
+					:data="list"
+					:props="{
+						label: 'name'
+					}"
+					highlight-current
+					:draggable="isDrag"
+					:allow-drag="allowDrag"
+					:allow-drop="allowDrop"
+					:expand-on-click-node="false"
+					@node-contextmenu="onContextMenu"
+					@node-click="rowClick"
+				>
 					<template #default="{ node, data }">
 						<div class="dept-tree__node">
-							<span class="dept-tree__node-label" :class="{
-								'is-active': data.id == ViewGroup?.selected?.id
-							}" @click="rowClick(data)">{{ node.label }}</span>
-							<span v-if="browser.isMini" class="dept-tree__node-icon"
-								@click="onContextMenu($event, data, node)">
+							<span
+								class="dept-tree__node-label"
+								:class="{
+									'is-active': data.id == ViewGroup?.selected?.id
+								}"
+								>{{ node.label }}</span
+							>
+							<span
+								v-if="browser.isMini"
+								class="dept-tree__node-icon"
+								@click="onContextMenu($event, data, node)"
+							>
 								<el-icon>
 									<more-filled />
 								</el-icon>
@@ -60,9 +79,10 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { useCool } from "/@/cool";
 import { deepTree, revDeepTree } from "/@/cool/utils";
 import { isArray } from "lodash-es";
-import { ContextMenu, setFocus, useForm } from "@cool-vue/crud";
+import { ContextMenu, useForm } from "@cool-vue/crud";
 import { Refresh as RefreshIcon, Operation, MoreFilled } from "@element-plus/icons-vue";
-import { checkPerm, useViewGroup } from "/$/base";
+import { checkPerm } from "/$/base";
+import { useViewGroup } from "/@/plugins/view";
 
 const props = defineProps({
 	drag: {
@@ -78,9 +98,8 @@ const props = defineProps({
 const emit = defineEmits(["refresh", "user-add"]);
 
 const { service, browser } = useCool();
-const { ViewGroup } = useViewGroup();
-
 const Form = useForm();
+const { ViewGroup } = useViewGroup();
 
 // 树形列表
 const list = ref<Eps.BaseSysDepartmentEntity[]>([]);
@@ -440,7 +459,6 @@ onMounted(function () {
 
 			&.is-active {
 				color: var(--color-primary);
-				font-weight: bold;
 			}
 		}
 

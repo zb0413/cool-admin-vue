@@ -1,13 +1,13 @@
 <template>
 	<div class="app-process">
 		<ul class="app-process__op">
-			<li class="item" @click="router.back">
+			<li class="item" @click="toBack">
 				<i class="cl-iconfont cl-icon-back"></i>
 			</li>
 			<li class="item" @click="toRefresh">
 				<i class="cl-iconfont cl-icon-refresh"></i>
 			</li>
-			<li class="item" @click="router.push('/')">
+			<li class="item" @click="toHome">
 				<i class="cl-iconfont cl-icon-home"></i>
 			</li>
 		</ul>
@@ -48,6 +48,16 @@ const { process } = useBase();
 // 刷新当前路由
 function toRefresh() {
 	mitt.emit("view.refresh");
+}
+
+// 回首页
+function toHome() {
+	router.push("/");
+}
+
+// 返回上一页
+function toBack() {
+	router.back();
 }
 
 // 跳转
